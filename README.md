@@ -13,7 +13,7 @@ Given one or more addresses, compute the significance (probability) of the addre
 
 CMC
 Coingecko
-EthPlorer API
+EthPlorer API: https://ethplorer.io/
 
 
 
