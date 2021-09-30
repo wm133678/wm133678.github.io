@@ -1,4 +1,27 @@
 import csv
+import pandas as pd
+import requests
+from requests.exceptions import HTTPError
+
+WhaleWallet = "0xae4d837caa0c53579f8a156633355df5058b02f3"
+"""
+Functions to create:
+
+Find purchase date of token and what token it is.
+Then find token price at the time compared to current value.
+
+
+"""
+
+def tokenScrape():
+    with open('AddressScrape.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            # Date of Transaction
+            print(f'{row[2]}')
+
+
 
 
 def DateScrape():
@@ -27,7 +50,7 @@ def DateAndAddress():
             if row[8] != "" and row[2] == "Receive":
                 print(f'{row[0]} {row[8]}  {row[7]} ')
 
-def GetValueAtTime():
+def ContractAddressOfTokenBought():
     with open('AddressScrape.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
@@ -35,8 +58,12 @@ def GetValueAtTime():
             if row[8] != "":
                 address = row[8]
                 print("Address = " + address)
+                date = (f'{row[0]}')
+                print("Date = " + date)
                 etherscanLink = "https://etherscan.io/address/" + address
-                print(etherscanLink)
+                #print(etherscanLink)
+
+
 
 def preventRepeats():
     address = 0
@@ -48,6 +75,97 @@ def preventRepeats():
     else:
         pass
 
+def pandaViewing():
+    data = pd.read_csv(r'AddressScrape.csv')
+    df = pd.DataFrame(data)
+    print(df)
+
+def GetUSDValueAtDate(tokenName, date):
+
+    #tokenName = "unfederalreserve"
+    #date = "05-05-2021"
+
+    r = requests.get("http://api.coingecko.com/api/v3/coins/" + tokenName + "/history?date=" + date + "&localization=false")
+    #print(r.status_code)
+    #print(r.text)
+    jsonResponse = r.json()
+    getUSDPrice = {'key1': 'value1', 'key2': 'value2'}
+    value = jsonResponse["market_data"]["current_price"]["usd"]
+    print("Token " + tokenName + " was worth " + str(value) + " on " + date)
+
+
+
+
+def checkIfValidAPI():
+    r = requests.get("http://api.coingecko.com/api/v3/coins/unfederalreserve/history?date=05-05-2021&localization=false")
+    if r.status_code == requests.codes.ok:
+        pass
+    else:
+        print("here")
+
+def PriceAtDateToken():
+    with open('AddressScrape.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            if row[8] != "":
+                address = row[8]
+                print("Address = " + address)
+                date = (f'{row[0]}')
+                print("Date = " + date)
+
+                # turn token address into token name
+                TokenInfo = requests.get("http://api.coingecko.com/api/v3/coins/ethereum/contract/" + address)
+                Tjson = TokenInfo.json()
+                tokenName = Tjson["id"]
+
+
+                etherscanLink = "https://etherscan.io/address/" + address
+                #print(etherscanLink)
+                r = requests.get("http://api.coingecko.com/api/v3/coins/" + tokenName + "/history?date=" + date + "&localization=false")
+                # print(r.status_code)
+                # print(r.text)
+                jsonResponse = r.json()
+                getUSDPrice = {'key1': 'value1', 'key2': 'value2'}
+                value = jsonResponse["market_data"]["current_price"]["usd"]
+                print("Token " + tokenName + " was worth " + str(value) + " on " + date)
+
+def PriceAtDateForOneToken():
+
+    address = "0xfe3e6a25e6b192a42a44ecddcd13796471735acf"
+    print("Address = " + address)
+    date = "01-11-2021"
+    print("Date = " + date)
+
+    # turn token address into token name
+    TokenInfo = requests.get("http://api.coingecko.com/api/v3/coins/ethereum/contract/" + address)
+    Tjson = TokenInfo.json()
+    tokenName = Tjson['id']
+    print(tokenName)
+
+    r = requests.get("http://api.coingecko.com/api/v3/coins/" + tokenName + "/history?date=" + date + "&localization=false")
+    # print(r.status_code)
+    print(r.text)
+    jsonResponse = r.json()
+    print(jsonResponse)
+    #value = jsonResponse["market_data"]["current_price"]["usd"]
+    #print("Token " + tokenName + " was worth " + str(value) + " on " + date)
+
+
+
 #BuyAddress()
 #DateAndAddress()
-GetValueAtTime()
+#GetValueAtTime()
+
+"""
+Historical price call to CoinGecko
+
+api.coingecko.com/api/v3/coins/unfederalreserve/history?date=05-05-2021&localization=false
+api.coingecko.com/api/v3/coins/ethereum/contract
+
+
+"""
+
+#ContractAddressOfTokenBought()
+GetUSDValueAtDate(tokenName="Ethereum", date="01-01-2021")
+#PriceAtDateForOneToken()
