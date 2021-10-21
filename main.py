@@ -2,6 +2,10 @@ import csv
 import pandas as pd
 import requests
 from requests.exceptions import HTTPError
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+#driver = webdriver.Chrome('<path_to>/chromedriver')
+# Need to find path for Chromedriver
 
 WhaleWallet = "0xae4d837caa0c53579f8a156633355df5058b02f3"
 """
@@ -10,10 +14,13 @@ Functions to create:
 Find purchase date of token and what token it is.
 Then find token price at the time compared to current value.
 
+https://etherscan.io/tokencheck-tool
+token quantity website
 
 """
 
 def tokenScrape():
+    # This function returns a list of Send / Recieve / Contract calls from Transaction list
     with open('AddressScrape.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
@@ -25,6 +32,7 @@ def tokenScrape():
 
 
 def DateScrape():
+    # This function returns the dates for each transaction from the wallet
     with open('AddressScrape.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
@@ -54,6 +62,8 @@ def ContractAddressOfTokenBought():
     with open('AddressScrape.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
+        outF = open("AddressAndDateBought.txt", "w")
+
         for row in csv_reader:
             if row[8] != "":
                 address = row[8]
@@ -61,6 +71,10 @@ def ContractAddressOfTokenBought():
                 date = (f'{row[0]}')
                 print("Date = " + date)
                 etherscanLink = "https://etherscan.io/address/" + address
+                outF.write(address + " | " + date)
+                outF.write("\n")
+
+        outF.close()
                 #print(etherscanLink)
 
 
@@ -87,7 +101,7 @@ def GetUSDValueAtDate(tokenName, date):
 
     r = requests.get("http://api.coingecko.com/api/v3/coins/" + tokenName + "/history?date=" + date + "&localization=false")
     #print(r.status_code)
-    #print(r.text)
+    print(r.text)
     jsonResponse = r.json()
     getUSDPrice = {'key1': 'value1', 'key2': 'value2'}
     value = jsonResponse["market_data"]["current_price"]["usd"]
@@ -151,6 +165,23 @@ def PriceAtDateForOneToken():
     #value = jsonResponse["market_data"]["current_price"]["usd"]
     #print("Token " + tokenName + " was worth " + str(value) + " on " + date)
 
+def RecentCops():
+    # This function will return recent purchases from a wallet
+    # if date is "recent", past week
+    from datetime import date
+    today = date.today()
+    d3 = today.strftime("%m/%d/%Y")
+
+    dateRange = d3[0]
+    print(dateRange)
+
+    print("Today's date:", d3)
+    with open('AddressScrape.csv') as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            # Date of Transaction
+            print(f'{row[0]}')
 
 
 #BuyAddress()
@@ -165,7 +196,8 @@ api.coingecko.com/api/v3/coins/ethereum/contract
 
 
 """
-
+RecentCops()
+#DateScrape()
 #ContractAddressOfTokenBought()
-GetUSDValueAtDate(tokenName="Ethereum", date="01-01-2021")
+#GetUSDValueAtDate(tokenName="Ethereum", date="01-01-2021")
 #PriceAtDateForOneToken()
